@@ -1,0 +1,17 @@
+<!doctype html>
+<head>
+  <title>Left or Right</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.css">
+</head>
+<body>
+<div id="outer-container">
+  <div id="nav-container">
+  <ul class='vertical menu'>
+  {% for topic in categories %}
+  <li class="topic-preview"><a href="#">{{ topic[1] }}</a></li>
+  {% endfor %}
+  </ul>
+  </div>
+  <h1>Welcome!</h1>
+</div>
+</body>

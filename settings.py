@@ -1,0 +1,2 @@
+dbuser = 'smitty'
+dbpassword = 'lemons'

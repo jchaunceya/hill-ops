@@ -1,0 +1,52 @@
+<!doctype html>
+<head>
+  <title>{{ category }} : Left or Right</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.4.3/css/foundation.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='foundation.css') }}">
+</head>
+<body>
+<div id="outer-container">
+
+  <!-- Begin naviation -->
+
+  <div id="nav-container" class='top-bar'>
+  <ul class="dropdown menu" data-dropdown-menu data-click-open id="dropdown">
+    <li> <a href="#">Topics</a>
+      <!-- Nested menu -->
+      <ul class="menu">
+	{% for topic in categories %}
+	<li class="is-submenu-item is-dropdown-submenu-item"><a href='/category/{{topic[0]}}/'>{{topic[1]}}</a></li>
+	{% endfor %}
+      </ul>
+
+      <!-- End nested menu -->
+    </li>
+  </ul>
+  <!-- End full menu -->
+  </div>
+  <!-- End navigation -->
+  <div class='grid-x'>
+    <div class='cell small-3'></div>
+    <div class="cell small-6 preview-article">
+      <h1>Welcome!</h1>
+      <ul class=''>
+
+	{% for article in articles %}
+	<li class="article-preview"><a href='{{article}}'>Article</a></li>
+	{% endfor %}
+      </ul>
+
+      <p>{{ preview }}</p>
+    </div>
+    <div class='cell small-3'></div>
+  </div>
+  
+</div>
+
+  <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', filename='foundation.js') }}"></script>
+  <script> $(document).foundation(); </script>
+
+</body>
+</html>
