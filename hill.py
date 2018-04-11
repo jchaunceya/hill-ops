@@ -1,6 +1,6 @@
-import requests,re,bs4,pymongo,sklearn,pandas,concurrent.futures
+import requests,re,bs4,pymongo,sklearn,pandas,concurrent.futures,html
 from settings import dbuser,dbpassword
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from selenium import webdriver
 
 app = Flask(__name__)
@@ -47,9 +47,13 @@ def scrape_page(url):
 @app.route("/")
 def index():
 
-    categories = [(category, " ".join([c.capitalize() for c in category.split("-")])) for category in load_categories()]
+#    categories = [(category, " ".join([c.capitalize() for c in category.split("-")])) for category in load_categories()]
+    with pymongo.MongoClient('mongodb://{}:{}@ds117469.mlab.com:17469/hillops'.format(dbuser, dbpassword)) as mc:
+        articles = list(mc.hillops.whitehouse.find({'lean': {"$exists":True}}).limit(20))
     
-    return render_template('index.html', categories=categories)
+    return return_articles(which="articles2.html", page_header="Classification of The Hill opinion pieces", category='', articles=articles, categories=categories)
+    
+
 
 @app.route("/category/<category>/")
 def get_category(category):
@@ -60,16 +64,65 @@ def get_category(category):
     if category not in load_categories():
         return render_template('error.html')
     with pymongo.MongoClient('mongodb://{}:{}@ds117469.mlab.com:17469/hillops'.format(dbuser, dbpassword)) as mc:
-        articles = mc.hillops.allarticles.find({'category': category})
+        articles = list(mc.hillops.whitehouse.find({'category': category, 'lean': {"$exists":True}}))
+    
+    return return_articles(which="articles2.html", page_header=" ".join(category.split("-")).capitalize(), category=category, articles=articles, categories=categories)
 
-    mod_categories = [(category, " ".join([c.capitalize() for c in category.split("-")])) for category in categories]
-    if articles:
-        r = requests.get(opinion_base.format(articles[0]['href']))
-        soup = bs4.BeautifulSoup(r.text, 'lxml')
-        preview = " ".join([item.text for item in soup.select('div.field-item > p')])[:50] + '...'
-                         
-    return render_template('articles.html', category=category, articles=[article['href'] for article in articles], categories=mod_categories, preview=preview)
+@app.route("/columnist/<columnist>/")
+def columnnist(columnist):
+    global categories
+    decode_col = html.unescape(columnist)
+    " ".join([c.capitalize() for c in decode_col.split(" ")])
+    with get_mc() as mc:
+        articles = list(mc.hillops.whitehouse.find({"author":decode_col}))
+    if len(articles) == 0:
+        return "error: no articles found"
+    return return_articles(which="articles2.html", page_header=decode_col,category='', articles=articles, categories=categories)
 
+@app.route("/classify", methods=["GET", "POST"])
+def classify(previous=''):
+    if request.method == "POST":
+        id = int(request.form.get("article_id", None))
+
+
+
+        lean = request.form.get("classification", None)
+
+        if not id and not lean:
+            previous = "wtf1"
+        elif not id:
+            previous = lean
+        elif not lean:
+            previous = id
+        else:
+            previous = " - ".join([str(id), lean])
+        with get_mc() as mc:
+            mc.hillops.whitehouse.find_one_and_update({"id": id}, {"$set": {"lean": lean}})
+            
+    with get_mc() as mc:
+        articles = mc.hillops.whitehouse.find({"lean": {"$exists": False}}).limit(20)
+        articles = list(articles)
+    if not previous:
+        previous = "Please classify these by political lean, if you have the time :)"
+    return return_articles(which="classify.html", page_header=previous, category='', articles=articles, categories=categories, do_shorten=False)
+
+        
+
+        
+    
+
+    
+def return_articles(which, page_header, category, articles, categories, do_shorten=True):
+                              
+    mod_categories = [(topic_c, " ".join([c.capitalize() for c in topic_c.split("-")])) for topic_c in categories]
+    if do_shorten:
+        for article in articles:
+            article["text"] = " ".join(article["text"].split(" ")[:50])
+    if len(articles) > 20:
+        articles = articles[:21]
+    for article in articles:
+        article["encode_author"] = html.escape(article["author"])
+    return render_template(which, page_header=page_header, category=category, articles=articles, categories=mod_categories)
 def load_categories():
     global categories
 
@@ -116,4 +169,4 @@ def fetch_text(href):
     return text
 
 if __name__ == "__main__": 
-    scrape()
+    app.run()

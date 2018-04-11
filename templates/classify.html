@@ -34,7 +34,7 @@
 
   <div id="nav-container" class='top-bar'>
   <ul class="dropdown menu" data-dropdown-menu data-click-open id="dropdown">
-    <li><a href='{{ url_for("classify") }}' style="font-weight: 900;">Classify your own</a></li>
+     <li><a href='{{ url_for("index") }}' style="font-weight: 900;">Home</a></li>
     <!----------------------------------------------------------------------------------------------------------------------------->
     <!-- <li> <a href="#">Topics</a>												 -->
     <!--   <\!-- Nested menu -\->												 -->
@@ -56,16 +56,45 @@
     <div class="cell small-8 preview-article">
       <div class='grid-x grid-padding-y'>
 
-	<div class='cell small-12' ><h1 style="font-family: 'Alfa Slab One'; color: #FFF;">{{page_header|safe}}</h1></div>
+	<div class='cell small-12' ><h1 style="font-family: 'Alfa Slab One'; color: #FFF;">{{ page_header }}</h1></div>
 
 	<div class='grid-x grid-margin-y'>
 	{% for article in articles %}
-	<div class='cell small-2'><div class='lean-container' style='background-color: {% if article["lean"] == "r" %}#CA2D10'>R{% elif article["lean"] == "l" %}#0261E5'>L{% else %}#2AD1A1;'>C{% endif %}</div></div>
-	
+
+	<div class='cell small-2'><div class='lean-container' style='background-color: #7ED'>?</div></div>
 	<div class='cell small-8 text-left text-container'>
 	  <div class="article-title"><a href='{{article["href"]}}' style="font-family: 'Alfa Slab One';": >{{article["title"]}}</a></div>
 	  <div class="article-author"><a href='/columnist/{{article["encode_author"]}}'>- {{article["author"]}}</a></div>
 	  <div class="article-preview"><p  style="font-family: 'Brawler';">{{article["text"]}}...</p></div>
+	  <div class="form-wrapper">
+	    <form action='{{ url_for("classify")}}' method="POST">
+	      <fieldset class="" style="padding: 1.5em;">
+		<input type="hidden" name="article_id" value='{{ article["id"] }}' id="article_id">
+		<div class="grid-x">
+		  <div class="cell medium-2">
+		    <label for="leftlean">Left
+		      <input class="" type="radio" name="classification" value="l" id="leftlean" required>
+		    </label>
+		  </div>
+		  <div class="cell medium-2">
+		    <label for="rightlean">Right
+		      <input class="" type="radio" name="classification" value="r" id="rightlean" >
+		    </label>
+		  </div>
+		  <div class="cell medium-2">
+		    <label for="centerlean">Center
+		      <input class="" type="radio" name="classification" value="c" id="centerlean" >
+		    </label>
+		  </div>
+		  <div class="cell medium-4"></div>		  
+		  <div class="cell medium-2">		  
+		    <input type="submit"  value="submit" style="margin: 0;">
+		  </div>
+		</div>
+	      </fieldset>
+	    </form>
+	  </div>
+
 	</div>
 	<div class="cell small-2"></div>
 

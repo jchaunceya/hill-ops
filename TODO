@@ -1,0 +1,6 @@
+# Grab text for each article
+# Manually classify 200+ and then update DB
+# Prevent app from contacting database unneccessarily, e.g. for categories
+
+Aesthetic
+# Figure out color scheme
